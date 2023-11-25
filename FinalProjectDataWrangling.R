@@ -14,4 +14,4 @@ combined_df <- left_join(Agrofood_co2_emission_df, crop_yield_changes_df, by = c
 
 # AARON: Clean dataset and create the new categorical variable and new continuous/numerical variable
 # BELLA: Join dataframes and create at least one summarization data frame
-
+#DAGMAWIT: Data Nutrition Label 
