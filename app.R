@@ -1,10 +1,12 @@
+# Aaron Fresco
+# 12-4-23
+# Average Temperature per
+# country over time
+
 library(dplyr)
 library(stringr)
 library(ggplot2)
 library(shiny)
-library(plotly)
-
-bella_df <- read.csv("average_emmisions.csv")
 
 about_view <- fluidPage(
   h1("Climate Change Analysis"),
@@ -22,11 +24,28 @@ What patterns do you observe? What countries seem to be major outliers? How have
 ")
 )
 
+dina_page <- fluidPage(
+  titlePanel("Food Production vs Consumption"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("Country", "Select Country:",
+                  choices = unique(CombinedDataFrame$Area)),
+      hr(),
+      helpText("Select a country to contrast food production and consumption.")
+    ),
+    mainPanel(
+      plotOutput("production_vs_consumption"),
+      tableOutput("summary_table")
+    )
+  )
+)
+
+
 bella_analysis_view <- fluidPage(
   titlePanel("Exploring Global Emissions"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("country", "Select Country:", choices = unique(bella_df$Area)),
+      selectInput("country", "Select Country:", choices = unique(average_emmisions$Area)),
       p("What countries seem to be striving for change?"),
       p("What could be the cause of dramatic drops or rises in emissions?")
     ),
@@ -43,7 +62,7 @@ bella_analysis_view <- fluidPage(
                  p("“Between 1980 and 2017, China’s economy grew at breakneck speed, lifting millions out of poverty. Fossil fuels fueled much of China’s economic growth. As a result, China is now one of the world’s largest economies and the world’s largest emitter of carbon dioxide” (Cropper, 2020)."),
                  p("“China is responsible for 28% of the world’s annual carbon emissions” (Cropper, 2020)."),
                  tags$a(href = "https://www.jstor.org/stable/resrep25621#:~:text=To%20meet%20that%20demand%2C%20China,the%20world%27s%20largest%20carbon%20emitter.", "Click here to read more!")
-                 ),
+        ),
         tabPanel("Selected Country (1990-2020)", plotOutput("plot1990_2020_line"), plotOutput("plot1990_2020_box")),
         tabPanel("Selected Country (1990-2000)", plotOutput("plot1990_2000_line"), plotOutput("plot1990_2000_box")),
         tabPanel("Selected Country (2000-2010)", plotOutput("plot2000_2010_line"), plotOutput("plot2000_2010_box")),
@@ -53,22 +72,39 @@ bella_analysis_view <- fluidPage(
   )
 )
 
-# UI
+# Main Ui Page
+aaron_page <- fluidPage(
+  titlePanel("Average Temperature Over Years with Map"),
+  
+  mainPanel(
+    leafletOutput("country", width = '700px',)
+  ),
+  
+  sidebarLayout(
+    selectInput("country", "Select a Country:",
+                choices = unique(lat_lon$Area),
+                selected = unique(lat_lon$Area)[1]),
+    plotOutput("temperaturePlot"),
+  )
+)
+
+# Navbar of shiny app
 ui <- navbarPage(
   "Climate Change Analysis (Emissions, Temperatures, and Food Production/Consumption)",
   tabPanel("About Our Project", about_view),
-  tabPanel("Global Emissions", bella_analysis_view)
+  tabPanel("Global Emissions", bella_analysis_view),
+  tabPanel("Analysis View", aaron_page),
+  tabPanel("Food Production / Food Consumption", dina_page)
 )
 
-# SERVER
 server <- function(input, output) {
   
   filtered_data <- reactive({
-    filter(bella_df, Area %in% input$country)
+    filter(average_emmisions, Area %in% input$country)
   })
   
   output$all_countries <- renderPlot({
-    plot <- ggplot(bella_df, aes(x = Year, y = Avg_Emissions, color = Area, label = Area)) +
+    plot <- ggplot(average_emmisions, aes(x = Year, y = Avg_Emissions, color = Area, label = Area)) +
       geom_point(aes(color = Area)) +
       geom_line() +
       labs(title = "Average Emissions for All Countries 1990-2020",
@@ -133,7 +169,61 @@ server <- function(input, output) {
            x = "Country",
            y = "Average Emissions")
   }
+  
+  
+  # Filter data only needed for temperature plot
+  filtered_aaron_data <- reactive({
+    filter(lat_lon, Area == input$country)
+  })
+  
+  output$country <- renderLeaflet({
+    
+    map <- filtered_aaron_data()
+    
+    country <- leaflet()
+    country <- addTiles(country)
+    country <- setView(country, 
+                       lng = map$Lon[1], 
+                       lat = map$Lat[1], 
+                       zoom = 5)
+    
+  })
+
+  
+  # Plots average temperate of countries
+  output$temperaturePlot <- renderPlot({
+    plot_data <- filtered_aaron_data()
+    ggplot(plot_data, aes(x = Year, y = Average.Temperature..C)) +
+      geom_line() +
+      labs(title = paste("Average Temperature Over Years -", input$country),
+           x = "Year", y = "Temperature (°C)")
+  })
+  
+  selected_country_data <- reactive({
+    filter(CombinedDataFrame, Area == input$country)
+  })
+  
+  output$summary_table <- renderTable({
+    summarise(selected_country_data(),
+              Total_Production = sum(WH_2000 + RI_2000 + MZ_2000),
+              Total_Consumption = sum(Food.Household.Consumption))
+  })
+  
+  output$production_vs_consumption <- renderPlot({
+    dina_data <- selected_country_data()
+    total_prod <- dina_data$WH_2000[1] + dina_data$RI_2000[1] + dina_data$MZ_2000[1]
+    total_cons <- dina_data$Food.Household.Consumption[1]
+    
+    ggplot(dina_data, aes(x = Year)) +
+      geom_line(aes(y = total_prod, color = "blue", linetype = "solid")) +
+      geom_line(aes(y = total_cons, color = "red", linetype = "dashed")) + 
+      labs(title = paste("Food Production vs Consumption in", input$country),
+           x = "Year",
+           y = "Amount")
+  })
+  
 }
 
-# Run the Shiny app
-shinyApp(ui, server)
+shinyApp(ui = ui, server = server)
+
+
