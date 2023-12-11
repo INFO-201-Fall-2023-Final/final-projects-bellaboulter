@@ -45,7 +45,7 @@ bella_page <- fluidPage(
         tabPanel("All Countries (1990-2020)", plotOutput("all_countries"), 
                  h3("Do you see the sudden drop in Brazil’s emissions?"),
                  p("“The changes in the Brazilian Amazon in the past decade, and the contribution that they have made to slow global warming, are unprecedented” (Boucher, 2014)."),
-                 p("“Essentially all of the reduction in land use change emis- sions came from the decrease in deforestation in the Amazon, the world’s largest tropical forest” (Boucher, 2014)."),
+                 p("“Essentially all of the reduction in land use change emissions came from the decrease in deforestation in the Amazon, the world’s largest tropical forest” (Boucher, 2014)."),
                  p("Read more about this below. It’s crazy how important forests are in battling climate change!"),
                  tags$a(href = "https://www.jstor.org/stable/pdf/resrep00076.7.pdf", "Click here to read more!"),
                  p(" "),
@@ -69,7 +69,7 @@ aaron_page <- fluidPage(
   fluidRow(
     column(12,
            wellPanel(
-             p("These graphs show the rising temperatures of each country?"),
+             p("These graphs show the rising temperatures of each country."),
              p("What areas on the map seem to experience rising temperatures the most?"),
              p("We noticed that South America has experienced a significant rise in temperatures."),
              p("Might this be related to the deforestation of the Amazon that we explored on the previous page?"),
