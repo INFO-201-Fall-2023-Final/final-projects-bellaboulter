@@ -110,7 +110,8 @@ dina_page <- fluidPage(
       p("Notice how China is a major outlier again, but other outliers such as Indonesia and Brazil are not present on this graph."),
       p("This means that food consumption is a huge factor in China's total emissions, whereas Indonesia and Brazil might have other major causes."),
       tags$a(href = "https://www.jstor.org/stable/resrep25621#:~:text=To%20meet%20that%20demand%2C%20China,the%20world%27s%20largest%20carbon%20emitter.", "Click here to read about why China's food consumption emissions are so high."),
-      p(" "),
+      p("Also notice how many countries in Europe have reduced their food consumption emissions."),
+      tags$a(href = "https://www.eea.europa.eu/themes/climate/eu-greenhouse-gas-inventory/is-europe-reducing-its-greenhouse", "Click here to read Europe's efforts to reduce greenhouse gas emissions."),
       plotOutput("food_consumption_plot")
     )
   )
