@@ -17,7 +17,11 @@ about_view <- fluidPage(
   p("Our overall goal is to spark contemplation and conversation."),
   p("So as you explore our data, we ask:"),
   p("What patterns do you observe? What countries seem to be major outliers? How have emissions and temperatures changed in the last 30 years? How do these subjects relate to each other and climate change as a whole?"),
-  p("We hope this global climate change analysis was thought provoking and interesting!")
+  p("We hope this global climate change analysis was thought provoking and interesting!"),
+
+  mainPanel(
+    img(src = 'img.png', height = "100%", width = "100%", align = "middle"),
+  )
 )
 
 # Bella's UI
