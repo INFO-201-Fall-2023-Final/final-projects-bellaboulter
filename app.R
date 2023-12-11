@@ -12,38 +12,29 @@ about_view <- fluidPage(
   h1("Climate Change Analysis"),
   h2("(Emissions, Temperatures, and Food Consumption)"),
   p("We have chosen to analyze data about climate change around the world. There are many different factors when it comes to climate change, but we have decided to mostly focus on global emissions, rising temperatures, and food consumption."),
-  p("We want our project to be up to interpretation, and we want to avoid making assumptions or drawing absolute conclusions, as we are fully aware that we have not examined every factor that contributes to the complicated topic of climate change. "),
-  p("However, our project has revealed interesting observations. Our overall goal is to spark contemplation and conversation."),
+  p("We want to avoid making assumptions or drawing absolute conclusions, as we are fully aware that we have not examined every factor that contributes to the complicated topic of climate change. "),
+  p("However, our project has revealed interesting observations that we have included on each page."),   
+  p("Our overall goal is to spark contemplation and conversation."),
   p("So as you explore our data, we ask:"),
   p("What patterns do you observe? What countries seem to be major outliers? How have emissions and temperatures changed in the last 30 years? How do these subjects relate to each other and climate change as a whole?"),
   p("We hope this global climate change analysis was thought provoking and interesting!")
 )
 
-# Dina's UI
-dina_page <- fluidPage(
-  titlePanel("Exploring Food Consumption"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("Country", "Select Country:",
-                  choices = unique(dina_df$Area)),
-      p("TO DO: input information and questions"),
-      p("TO DO: input information and questions")
-    ),
-    mainPanel(
-      plotOutput("food_consumption_plot"),
-      plotOutput("all_countries_food_consumption")
-    )
-  )
-)
-
 # Bella's UI
 bella_page <- fluidPage(
   titlePanel("Exploring Global Emissions"),
+  fluidRow(
+    column(12,
+           wellPanel(
+             p("These graphs show the total greenhouse gas emissions from various sources."),
+             p("What countries seem to be striving for change?"),
+             p("What could be the cause of dramatic drops or rises in emissions?")
+           )
+    )
+  ),
   sidebarLayout(
     sidebarPanel(
-      selectInput("country", "Select Country:", choices = unique(bella_df$Area)),
-      p("What countries seem to be striving for change?"),
-      p("What could be the cause of dramatic drops or rises in emissions?")
+      selectInput("BellaCountry", "Select Country:", choices = unique(bella_df$Area)),
     ),
     mainPanel(
       tabsetPanel(
@@ -70,23 +61,64 @@ bella_page <- fluidPage(
 
 # Aaron's UI
 aaron_page <- fluidPage(
-  titlePanel("Average Temperature Over Years with Map"),
+  titlePanel("Temperatures Over 30 Years with Interactive Map"),
+  fluidRow(
+    column(12,
+           wellPanel(
+             p("These graphs show the rising temperatures of each country?"),
+             p("What areas on the map seem to experience rising temperatures the most?"),
+             p("We noticed that South America has experienced a significant rise in temperatures."),
+             p("Might this be related to the deforestation of the Amazon that we explored on the previous page?"),
+             p("Clearly trees have a big impact on both carbon emissions and temperatures!"),
+             tags$a(href = "https://time.com/6213444/how-do-trees-affect-climate-change/", "Click here to read more about trees!")
+           )
+    )
+  ),
   
   mainPanel(
-    leafletOutput("country", width = '700px')
+    leafletOutput("AaronCountry", width = '700px')
   ),
   
   sidebarLayout(
-    selectInput("country", "Select a Country:",
-                choices = unique(aaron_df$Area),
-                selected = unique(aaron_df$Area)[1]),
+      sidebarPanel(
+        selectInput("AaronCountry", "Select a Country:",
+                  choices = unique(aaron_df$Area),
+                  selected = unique(aaron_df$Area)[1])
+      ),
     plotOutput("temperaturePlot"),
+  )
+)
+
+# Dina's UI
+dina_page <- fluidPage(
+  titlePanel("Exploring Food Consumption"),
+  fluidRow(
+    column(12,
+           wellPanel(
+             p("These graphs show the emissions from food consumption at the household level.")
+           )
+    )
+  ),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("DinaCountry", "Select Country:",
+                  choices = unique(dina_df$Area))
+    ),
+    mainPanel(
+      plotOutput("all_countries_food_consumption"),
+      p("Recall the graph from the the Global Emissions of these same countries."),
+      p("Notice how China is a major outlier again, but other outliers such as Indonesia and Brazil are not present on this graph."),
+      p("This means that food consumption is a huge factor in China's total emissions, whereas Indonesia and Brazil might have other major causes."),
+      tags$a(href = "https://www.jstor.org/stable/resrep25621#:~:text=To%20meet%20that%20demand%2C%20China,the%20world%27s%20largest%20carbon%20emitter.", "Click here to read about why China's food consumption emissions are so high."),
+      p(" "),
+      plotOutput("food_consumption_plot")
+    )
   )
 )
 
 # Main UI
 ui <- navbarPage(
-  "Climate Change Analysis (Emissions, Temperatures, and Food Production/Consumption)",
+  "Climate Change Analysis (Emissions, Temperatures, and Food Consumption)",
   tabPanel("About Our Project", about_view),
   tabPanel("Global Emissions", bella_page),
   tabPanel("Global Temperatures", aaron_page),
@@ -97,7 +129,7 @@ server <- function(input, output) {
   
   # Bella's server 
   filtered_data <- reactive({
-    filter(bella_df, Area %in% input$country)
+    filter(bella_df, Area %in% input$BellaCountry)
   })
   
   output$all_countries <- renderPlot({
@@ -151,7 +183,7 @@ server <- function(input, output) {
     ggplot(data = data, aes(x = Year, y = Avg_Emissions, color = Area, label = Area)) +
       geom_point() +
       geom_line() +
-      labs(title = paste("Selected Country's Average Emissions from", decade),
+      labs(title = paste(input$BellaCountry, "'s Average Emissions from", decade),
            x = "Year",
            y = "Total Emissions")
   }
@@ -162,23 +194,23 @@ server <- function(input, output) {
     
     ggplot(data = data, aes(x = Area, y = Avg_Emissions, fill = Area)) +
       geom_boxplot() +
-      labs(title = paste("Box Plot of Selected Country's Emissions from", decade),
+      labs(title = paste("Box Plot of", input$BellaCountry, "'s Emissions from", decade),
            x = "Country",
            y = "Average Emissions")
   }
   
   # Aaron's server 
   filtered_aaron_data <- reactive({
-    filter(aaron_df, Area == input$country)
+    filter(aaron_df, Area == input$AaronCountry)
   })
   
-  output$country <- renderLeaflet({
+  output$AaronCountry <- renderLeaflet({
     
     map <- filtered_aaron_data()
     
-    country <- leaflet()
-    country <- addTiles(country)
-    country <- setView(country, 
+    AaronCountry <- leaflet()
+    AaronCountry <- addTiles(AaronCountry)
+    AaronCountry <- setView(AaronCountry, 
                        lng = map$Lon[1], 
                        lat = map$Lat[1], 
                        zoom = 5)
@@ -189,13 +221,13 @@ server <- function(input, output) {
     plot_data <- filtered_aaron_data()
     ggplot(plot_data, aes(x = Year, y = Average.Temperature..C)) +
       geom_line() +
-      labs(title = paste("Average Temperature Over Years -", input$country),
+      labs(title = paste("Temperatures Over 30 Years in", input$AaronCountry),
            x = "Year", y = "Temperature (°C)")
   })
   
   # Dina's server 
   filtered_data_dina <- reactive({
-      filter(dina_df, Area == input$Country)
+      filter(dina_df, Area == input$DinaCountry)
   })
   
   output$food_consumption_plot <- renderPlot({
